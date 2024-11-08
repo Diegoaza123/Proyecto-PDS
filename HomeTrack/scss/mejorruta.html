@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>HomeTrack - Mapa de Rutas</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Mapa de rutas de transporte" name="keywords">
+    <meta content="Mapa interactivo de transporte público" name="description">
+
+    <link href="img/favicon.ico" rel="icon">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        /* General styles */
+        .dashboard-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .route-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .route-card h5 {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .route-card input,
+        .route-card button {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Instructions styles */
+        .instructions {
+            font-size: 1rem;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            border-radius: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+            max-width: 600px;
+            margin: 30px auto;
+            text-align: left;
+            position: relative;
+        }
+
+        .instructions h2 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .instructions p {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+            color: #2c3e50;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .close-btn {
+            background-color: #ff6b6b;
+            color: white;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        .close-btn:hover {
+            background-color: #ff4c4c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid bg-light pt-3 d-none d-lg-block">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 text-center text-lg-left mb-2 mb-lg-0">
+                    <div class="d-inline-flex align-items-center">
+                        <p><i class="fa fa-envelope mr-2"></i>info@hometrack.com</p>
+                        <p class="text-body px-3">|</p>
+                        <p><i class="fa fa-phone-alt mr-2"></i>+57 345678232</p>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center text-lg-right">
+                    <div class="d-inline-flex align-items-center">
+                        <a class="text-primary px-3" href="">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a class="text-primary px-3" href="">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a class="text-primary px-3" href="">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a class="text-primary px-3" href="">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid position-relative nav-bar p-0">
+        <div class="container-lg position-relative p-0 px-lg-3" style="z-index: 9;">
+            <nav class="navbar navbar-expand-lg bg-light navbar-light shadow-lg py-3 py-lg-0 pl-3 pl-lg-5">
+                <a href="index.html" class="navbar-brand">
+                    <h1 class="m-0 text-primary"><span class="text-dark">Home</span>Track</h1>
+                </a>
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-between px-3" id="navbarCollapse">
+                    <div class="navbar-nav ml-auto py-0">
+                        <a href="transporte.html" class="nav-item nav-link">Transporte</a>
+                        <a href="mapa.html" class="nav-item nav-link">Mapa</a>
+                        <a href="guia.html" class="nav-item nav-link">Guía</a>
+                        <a href="contact.html" class="nav-item nav-link">Contacto</a>
+                        <a href="index.html" class="nav-item nav-link">Cerrar sesión</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </div>
+    <div class="container-fluid pt-3">
+        <div class="container">
+            <h1 class="text-primary text-center mb-4"></h1>
+            <p class="text-center">Bienvenido, Pablito Perez, ya puedes escoger las mejores rutas de transporte publico con HomeTrack para llegar a la U.</p>
+            <p class="text-center">Empecemos seleccionando una lugar de origen y otro de llegada</p>
+            <br>
+            <div class="dashboard-container">
+                <!-- Formulario de inputs para origen y destino -->
+                <div class="route-card">
+                    <h5>Calcula la Ruta Más Rápida</h5>
+                    <input type="text" id="start" placeholder="Lugar de origen" class="form-control" />
+                    <input type="text" id="end" placeholder="Lugar de destino" class="form-control" />
+                    <button onclick="calculateRoute()" class="btn btn-primary">Calcular Ruta</button>
+                </div>
+
+                <!-- Mapa -->
+                <div id="map" class="col-lg-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="routeInstructions" class="instructions" style="display: none;">
+        <h2>Instrucciones Detalladas de la Ruta</h2>
+        <p>Para llegar a tu destino de la forma más rápida, sigue los pasos a continuación:</p>
+        <ol>
+            <li>Toma el metro en la estación <strong>Estadio</strong>.</li>
+            <li>Dirígete hasta la estación <strong>San Antonio</strong>.</li>
+            <li>Desde San Antonio, toma la línea A en dirección a <strong>La Estrella</strong>.</li>
+            <li>Bájate en la estación <strong>Aguacatala</strong>.</li>
+            <li>Al salir, camina hacia el norte, cruzando el puente peatonal.</li>
+            <li>Continúa recto hasta que llegues a la universidad.</li>
+        </ol>
+        <p>¡Buen viaje y asegúrate de revisar los horarios de servicio del metro para planificar tu recorrido con anticipación!</p>
+        <button onclick="closeInstructions()" class="close-btn">Cerrar</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    <script>
+        // Inicializa el mapa
+        var map = L.map('map').setView([6.1815, -75.5770], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var routingControl;
+
+        // Función para calcular la ruta y mostrar instrucciones
+        function calculateRoute() {
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+
+            if (start && end) {
+                if (routingControl) {
+                    map.removeControl(routingControl);
+                }
+
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(start.split(',')[0], start.split(',')[1]),
+                        L.latLng(end.split(',')[0], end.split(',')[1])
+                    ],
+                    routeWhileDragging: true,
+                    showAlternatives: true
+                }).addTo(map);
+
+                document.getElementById('routeInstructions').style.display = 'block';
+            } else {
+                alert('Por favor, ingresa ambos puntos de origen y destino.');
+            }
+        }
+
+        // Función para cerrar las instrucciones
+        function closeInstructions() {
+            document.getElementById('routeInstructions').style.display = 'none';
+        }
+    </script>
+    <div class="container-fluid bg-dark text-white-50 py-5 px-sm-3 px-lg-5">
+        <div class="row pt-5">
+            <div class="col-lg-3 col-md-6 mb-5">
+                <a href="index.html" class="navbar-brand">
+                    <h1 class="text-primary"><span class="text-white">Home</span>Track</h1>
+                </a>
+                <p>Recomendaciones de las mejores rutas de transporte público para ir y volver de la universidad.</p>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-5">
+                <h5 class="text-white text-uppercase mb-4" style="letter-spacing: 5px;">Nuestros Servicios</h5>
+                <div class="d-flex flex-column justify-content-start">
+                    <a class="text-white-50 mb-2" href="transporte.html"><i class="fa fa-angle-right mr-2"></i>Transporte</a>
+                    <a class="text-white-50 mb-2" href="mapa.html"><i class="fa fa-angle-right mr-2"></i>Mapa</a>
+                    <a class="text-white-50 mb-2" href="guia.html"><i class="fa fa-angle-right mr-2"></i>Guía</a>
+                    <a class="text-white-50 mb-2" href="contact.html"><i class="fa fa-angle-right mr-2"></i>Contacto</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

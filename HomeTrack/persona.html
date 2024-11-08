@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>HomeTrack - Mapa de Rutas</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta content="Mapa de rutas de transporte" name="keywords">
+    <meta content="Mapa interactivo de transporte público" name="description">
+
+    <link href="img/favicon.ico" rel="icon">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        .dashboard-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .route-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .route-card h5 {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .route-card input,
+        .route-card button {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid pt-3">
+        <div class="container">
+            <h1 class="text-primary text-center mb-4">Mapa de Rutas de Transporte</h1>
+            <p class="text-center">Aquí puedes visualizar un mapa con las rutas de transporte recomendadas.</p>
+
+            <div class="dashboard-container">
+                <!-- Formulario de inputs para origen y destino -->
+                <div class="route-card">
+                    <h5>Calcula la Ruta Más Rápida</h5>
+                    <input type="text" id="start" placeholder="Lugar de origen" class="form-control" />
+                    <input type="text" id="end" placeholder="Lugar de destino" class="form-control" />
+                    <button onclick="calculateRoute()" class="btn btn-primary">Calcular Ruta</button>
+                </div>
+
+                <!-- Mapa -->
+                <div id="map" class="col-lg-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    <script>
+        // Inicializa el mapa
+        var map = L.map('map').setView([6.1815, -75.5770], 14);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var routingControl;
+
+        // Función para calcular la ruta más rápida
+        function calculateRoute() {
+            const start = document.getElementById('start').value;
+            const end = document.getElementById('end').value;
+
+            if (start && end) {
+                if (routingControl) {
+                    map.removeControl(routingControl);
+                }
+
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(start.split(',')[0], start.split(',')[1]),
+                        L.latLng(end.split(',')[0], end.split(',')[1])
+                    ],
+                    routeWhileDragging: true,
+                    showAlternatives: true
+                }).addTo(map);
+            } else {
+                alert('Por favor, ingresa ambos puntos de origen y destino.');
+            }
+        }
+    </script>
+</body>
+
+</html>
